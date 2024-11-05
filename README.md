@@ -1,2 +1,2 @@
 # awan_app_frontend
-Member app built with react native
+frontend of awan mobile app built with react native
