@@ -1,33 +1,38 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import Config from 'react-native-config';
+import { createRequest } from '../auth/utils';
 
 const RegistrationScreen = ({ navigation }) => {
   const [userData, setUserData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
-    businessNature: '',
-    password: ''
+    business_nature: '',
   });
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [businessNatureColor, setBusinessNatureColor] = useState('#aaa'); // Default color for placeholder
 
   const handleRegister = () => {
-    const { firstName, lastName, email, password } = userData;
-
-    if (password !== confirmPassword) {
-      Alert.alert("Passwords do not match", "Please ensure the password and confirmation match.");
-      return;
-    }
-
-    if (firstName && lastName && email && password && userData.businessNature) {
-      // Perform registration logic (e.g., API call to register the user)
-      Alert.alert("Registration Successful", "You have registered successfully!");
-      navigation.navigate('Login'); // Navigate to Login screen after successful registration
-    } else {
+    const checkAllFields = Object.values(userData).every((value) => value !== '')
+    if (!checkAllFields){
       Alert.alert("Missing Fields", "Please fill in all the fields.");
     }
+    const request = createRequest()
+    payload = {...userData}
+    try {
+      const res = request.post('/register', payload)
+      Alert.alert('Registration successful. Please check your email for further instructions')
+      navigation.navigate('login')
+    } catch (error) {
+      if (error.response?.data?.error){
+        Alert.alert('Registration failed')
+      }
+      else{
+        Alert.alert('An error occured. Please try again')
+      }
+    }
+
   };
 
   return (
@@ -37,15 +42,15 @@ const RegistrationScreen = ({ navigation }) => {
       <TextInput
         style={styles.input}
         placeholder="First Name"
-        value={userData.firstName}
-        onChangeText={(text) => setUserData((prev) => ({ ...prev, firstName: text }))}
+        value={userData.first_name}
+        onChangeText={(text) => setUserData((prev) => ({ ...prev, first_name: text }))}
       />
 
       <TextInput
         style={styles.input}
         placeholder="Last Name"
-        value={userData.lastName}
-        onChangeText={(text) => setUserData((prev) => ({ ...prev, lastName: text }))}
+        value={userData.last_name}
+        onChangeText={(text) => setUserData((prev) => ({ ...prev, last_name: text }))}
       />
 
       <TextInput
@@ -60,9 +65,9 @@ const RegistrationScreen = ({ navigation }) => {
       {/* Picker for Nature of Business */}
       <View style={styles.pickerContainer}>
         <Picker
-          selectedValue={userData.businessNature}
+          selectedValue={userData.business_nature}
           onValueChange={(itemValue) => {
-            setUserData((prev) => ({ ...prev, businessNature: itemValue }));
+            setUserData((prev) => ({ ...prev, business_nature: itemValue }));
             setBusinessNatureColor(itemValue ? '#333' : '#aaa'); // Change color based on selection
           }}
           style={[styles.picker, { color: businessNatureColor }]} // Conditional color styling
@@ -75,22 +80,6 @@ const RegistrationScreen = ({ navigation }) => {
           <Picker.Item label="Services" value="services" />
         </Picker>
       </View>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={userData.password}
-        onChangeText={(text) => setUserData((prev) => ({ ...prev, password: text }))}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Register</Text>
