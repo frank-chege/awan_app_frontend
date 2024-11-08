@@ -1,38 +1,55 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import Config from 'react-native-config';
-import { createRequest } from '../auth/utils';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { createRequest } from "../auth/utils";
 
 const RegistrationScreen = ({ navigation }) => {
   const [userData, setUserData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    business_nature: '',
+    first_name: "",
+    last_name: "",
+    email: "",
+    business_nature: "",
   });
-  const [businessNatureColor, setBusinessNatureColor] = useState('#aaa'); // Default color for placeholder
+  const [loading, setLoading] = useState(false);
+  const [businessNatureColor, setBusinessNatureColor] = useState("#aaa"); // Default color for placeholder
+  const request = createRequest(); //configure request headers
 
-  const handleRegister = () => {
-    const checkAllFields = Object.values(userData).every((value) => value !== '')
-    if (!checkAllFields){
+  const handleRegister = async () => {
+    const checkAllFields = Object.values(userData).every(
+      (value) => value !== ""
+    );
+    if (!checkAllFields) {
       Alert.alert("Missing Fields", "Please fill in all the fields.");
-    }
-    const request = createRequest()
-    payload = {...userData}
-    try {
-      const res = request.post('/register', payload)
-      Alert.alert('Registration successful. Please check your email for further instructions')
-      navigation.navigate('login')
-    } catch (error) {
-      if (error.response?.data?.error){
-        Alert.alert('Registration failed')
-      }
-      else{
-        Alert.alert('An error occured. Please try again')
-      }
+      return;
     }
 
+    payload = { ...userData };
+    setLoading(true);
+    try {
+      const res = await request.post(
+        "http://192.168.1.81:5000/api/v1/auth/register",
+        payload
+      );
+      res.data.message
+        ? Alert.alert(res.data.message)
+        : Alert.alert("Registration successful.Please check your email");
+      navigation.navigate("login");
+    } catch (error) {
+      if (error.response?.data?.error) {
+        Alert.alert(error.response?.data?.error);
+      } else {
+        Alert.alert("An error occured. Please try again");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,14 +60,18 @@ const RegistrationScreen = ({ navigation }) => {
         style={styles.input}
         placeholder="First Name"
         value={userData.first_name}
-        onChangeText={(text) => setUserData((prev) => ({ ...prev, first_name: text }))}
+        onChangeText={(text) =>
+          setUserData((prev) => ({ ...prev, first_name: text }))
+        }
       />
 
       <TextInput
         style={styles.input}
         placeholder="Last Name"
         value={userData.last_name}
-        onChangeText={(text) => setUserData((prev) => ({ ...prev, last_name: text }))}
+        onChangeText={(text) =>
+          setUserData((prev) => ({ ...prev, last_name: text }))
+        }
       />
 
       <TextInput
@@ -59,7 +80,9 @@ const RegistrationScreen = ({ navigation }) => {
         keyboardType="email-address"
         autoCapitalize="none"
         value={userData.email}
-        onChangeText={(text) => setUserData((prev) => ({ ...prev, email: text }))}
+        onChangeText={(text) =>
+          setUserData((prev) => ({ ...prev, email: text }))
+        }
       />
 
       {/* Picker for Nature of Business */}
@@ -68,7 +91,7 @@ const RegistrationScreen = ({ navigation }) => {
           selectedValue={userData.business_nature}
           onValueChange={(itemValue) => {
             setUserData((prev) => ({ ...prev, business_nature: itemValue }));
-            setBusinessNatureColor(itemValue ? '#333' : '#aaa'); // Change color based on selection
+            setBusinessNatureColor(itemValue ? "#333" : "#aaa"); // Change color based on selection
           }}
           style={[styles.picker, { color: businessNatureColor }]} // Conditional color styling
         >
@@ -82,10 +105,12 @@ const RegistrationScreen = ({ navigation }) => {
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
+        <Text style={styles.buttonText}>
+          {loading ? "Please wait..." : "Register"}
+        </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('login')}>
+      <TouchableOpacity onPress={() => navigation.navigate("login")}>
         <Text style={styles.loginLink}>Already have an account? Login</Text>
       </TouchableOpacity>
     </View>
@@ -96,19 +121,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    justifyContent: "center",
   },
   header: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF8C00',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#FF8C00",
+    textAlign: "center",
     marginBottom: 20,
   },
   input: {
     height: 50,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 15,
@@ -116,34 +141,34 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     marginBottom: 5,
   },
   pickerContainer: {
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 10,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   picker: {
     height: 50,
   },
   button: {
-    backgroundColor: '#FF8C00',
+    backgroundColor: "#FF8C00",
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   loginLink: {
-    color: '#FF8C00',
-    textAlign: 'center',
+    color: "#FF8C00",
+    textAlign: "center",
     marginTop: 20,
   },
 });
