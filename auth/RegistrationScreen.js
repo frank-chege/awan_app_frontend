@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { createRequest } from "../auth/utils";
+import { createRequest } from "../common/utils";
 
 const RegistrationScreen = ({ navigation }) => {
   const [userData, setUserData] = useState({

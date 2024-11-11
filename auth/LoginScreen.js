@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import { createRequest } from "../auth/utils";
+import { createRequest } from "../common/utils";
 import { setItemAsync } from "expo-secure-store";
 
 const LoginScreen = ({ navigation }) => {
@@ -29,11 +29,11 @@ const LoginScreen = ({ navigation }) => {
         "http://192.168.1.81:5000/api/v1/auth/login",
         payload
       );
+
       const msg = res?.data?.message;
       const jwt_token = res.data?.jwt_token;
       const refresh_token = res?.data?.refresh_token;
       const name = res?.data?.user_name || "";
-      msg ? Alert.alert(msg) : Alert.alert("Login successful.");
       //store access tokens in keystores
       if (jwt_token && refresh_token) {
         try {
@@ -41,6 +41,7 @@ const LoginScreen = ({ navigation }) => {
           await Promise.all([
             setItemAsync("jwt_token", jwt_token),
             setItemAsync("refresh_token", refresh_token),
+            setItemAsync("name", name),
           ]);
           navigation.navigate("home", { name: name });
         } catch (error) {

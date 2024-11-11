@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,28 +6,24 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
-  Platform,
 } from "react-native";
-import Logo from "../assets/landscapeLogo.png"; // Adjust the path if needed
-
+import { getItemAsync } from "expo-secure-store";
+import Navbar from "../common/NavBar";
 const HomeScreen = ({ navigation, route }) => {
-  const { name } = route.params;
+  const [name, setName] = useState("");
+  //get name
+  useEffect(() => {
+    const fetchName = async () => {
+      const userName =
+        route?.params?.name || (await getItemAsync("name")) || "";
+      setName(userName);
+    };
+    fetchName();
+  }, [route]);
 
   return (
     <View style={styles.container}>
-      {/* Navigation Bar */}
-      <View style={styles.navBar}>
-        {/* Logo on the left */}
-        <Image source={Logo} style={styles.logo} />
-
-        {/* Hamburger Menu Icon on the right */}
-        <TouchableOpacity
-          onPress={() => navigation.openDrawer()} // Assuming you use a Drawer for navigation
-          style={styles.hamburgerMenu}
-        >
-          <Text style={styles.hamburgerText}>☰</Text>
-        </TouchableOpacity>
-      </View>
+      <Navbar navigation={navigation} />
 
       {/* Search Field with Button */}
       <View style={styles.searchContainer}>
@@ -43,7 +39,7 @@ const HomeScreen = ({ navigation, route }) => {
 
       {/* Welcome Message */}
       <View style={styles.header}>
-        <Text style={styles.welcomeText}>Hello, {name} 👋</Text>
+        <Text style={styles.welcomeText}>Hello {name} 👋</Text>
       </View>
 
       {/* Feature Tiles */}
@@ -95,23 +91,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-  },
-  navBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#333",
-    alignItems: "center",
-  },
-  logo: {
-    width: 100,
-    height: 50,
-  },
-  hamburgerMenu: {
-    padding: 10,
-  },
-  hamburgerText: {
-    fontSize: 30,
-    color: "#fff",
+    paddingTop: 60, // Adjusted for navbar space
   },
   searchContainer: {
     margin: 10,
@@ -123,23 +103,18 @@ const styles = StyleSheet.create({
     borderColor: "#FF8C00", // Border color around the container
     height: 40, // Ensures a consistent height
   },
-
   searchBar: {
     flex: 1, // Input takes most of the space
     height: "100%", // Fill the container height
     color: "#333", // Text color inside the input field
     paddingHorizontal: 10, // Padding inside the input field
     backgroundColor: "#fff", // Background color for the input field
-    // No border or border radius on the input field
   },
-
   searchButton: {
     padding: 10,
     width: 75,
     backgroundColor: "#FF8C00", // Button background color
-    // No border or border radius on the button
   },
-
   header: {
     padding: 20,
     alignItems: "center",
